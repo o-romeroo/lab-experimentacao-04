@@ -1,39 +1,67 @@
-# lab-experimentacao-04
 
-## Dataset analisado (poc-ti6)
+# Caracterização do Dataset
 
-- Visão geral:
-  - Prova de conceito que identifica repositórios OSS que "morrem" (período sem commits) e "ressuscitam" (retornam a commitar) entre 2018 e 2025.
-  - Detecta lacunas de atividade de pelo menos 180 dias no branch padrão e registra a primeira morte e o primeiro retorno.
+## Origem
+O dataset utilizado nesta pesquisa é derivado dos resultados da Fase 1 (`dataset_fase1_validacao.xlsx`), contendo repositórios de software livre que passaram por períodos de inatividade ("morte") e posterior revivência entre 2018 e 2025. Os principais campos do dataset são:
 
-- Fonte e amostragem:
-  - API: GitHub GraphQL API.
-  - Consulta utilizada: `created:2018-01-01..2025-12-31 sort:stars`.
-  - Amostragem atual: primeiros 10 repositórios retornados pela busca (prova de conceito).
-  - Commits considerados: histórico mais recente (até 100 commits) do branch padrão do repositório.
+- `owner/repo`
+- `url`
+- `stargazers`
+- `data_morte`
+- `data_ressurreicao`
+- `morreu_novamente`
 
-- Estrutura e campos (saída principal em Excel):
-  - Nome (string): owner/repo.
-  - Stargazers (int): número de estrelas.
-  - URL (string): link do repositório.
-  - Data de morte (date, ISO 8601): última data de commit antes do gap ≥ 180 dias.
-  - Data de ressurreição (date, ISO 8601): primeira data de commit após o gap.
-  - Morreu após reviver (int {0,1}): 1 quando há mais de um período de inatividade após a primeira ressurreição, 0 caso contrário.
+## Estrutura do Dataset
+- **Aba 1:** Repositórios mortos (sem revival)
+- **Aba 2:** Repositórios ressuscitados (com revival detectado)
+- **Aba 3:** Estatísticas gerais da coleta
 
-- Critérios e regras:
-  - Inatividade ("morte") = diferença entre commits consecutivos ≥ 180 dias.
-  - Apenas o branch padrão é analisado.
-  - Primeiro período detectado é usado para rotular morte/ressurreição; períodos adicionais acionam o indicador "Morreu após reviver".
+## Foco da Pesquisa
+O foco central deste estudo é a **qualidade do código** dos repositórios em dois momentos:
 
-- Pré-processamento e limitações conhecidas (versão atual):
-  - Limite de commits: apenas os 100 commits mais recentes; gaps mais antigos podem não ser detectados.
-  - Viés de popularidade ao ordenar por estrelas.
-  - Busca restringe-se a repositórios criados entre 2018–2025.
-  - Possível impacto de fuso horário (datas estão em ISO 8601/UTC) e de rate limits da API.
+1. **No momento da morte** (commit imediatamente anterior à `data_morte`)
+2. **Após a revivência** (10 commits após a `data_ressurreicao`)
 
-- Artefatos gerados:
-  - Arquivo Excel: `repositorios_morte_ressurreicao.xlsx` contendo as colunas acima.
+Essa abordagem permite comparar a evolução da qualidade do código antes e depois do processo de ressuscitação dos projetos.
 
-- Reprodutibilidade (script de coleta):
-  - Script: `pipeline-unificado-v1.py` (Python; depende de requests e pandas).
-  - Como executar: `python pipeline-unificado-v1.py` (necessita variável/token GitHub válido para GraphQL API).
+## 1. Snapshots
+Para cada repositório ressuscitado, são gerados **dois snapshots** do código:
+
+- **Pré-morte:** commit anterior à `data_morte`
+- **Pós-revive:** 10º commit após a `data_ressurreicao`
+
+## 2. Ferramentas de Análise
+A análise de qualidade é realizada utilizando o **SonarQube Cloud** e o `sonar-scanner-CLI`, que fornecem métricas detalhadas de qualidade, segurança e manutenibilidade do código.
+
+## 3. Métricas Coletadas por Snapshot
+As principais métricas extraídas de cada snapshot são:
+
+- **Maintainability / Reliability / Security scores** (SonarQube)
+- **Complexidade ciclomática** (média e máxima)
+- **Percentual de duplicação de código**
+- **Quantidade de code smells**
+- **Número de vulnerabilidades**
+- **Cobertura de testes (%)** (quando disponível)
+
+No contexto deste trabalho, as métricas efetivamente coletadas são:
+
+- **M3.1:** Métricas de análise estática de código (complexidade, duplicação, code smells)
+- **M3.2:** Índice de maintainability/qualidade Sonar (pontuação agregada de qualidade e segurança)
+
+## 4. Questões de Pesquisa (RQs)
+
+**RQ1:** Como a qualidade do código evolui após a revivência dos repositórios OSS?
+
+*Métricas analisadas:*
+- Maintainability score (SonarQube)
+- Quantidade de code smells
+- Complexidade ciclomática média
+
+**RQ2:** Quais aspectos de qualidade de código mais se alteram entre o momento de morte e o pós-revive?
+
+*Métricas analisadas:*
+- Percentual de duplicação de código
+- Número de vulnerabilidades
+- Índice de reliability (SonarQube)
+
+Essas métricas são extraídas e comparadas entre os snapshots pré-morte e pós-revive, permitindo avaliar o impacto da revivência na qualidade do código dos projetos analisados.
