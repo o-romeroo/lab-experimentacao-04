@@ -31,7 +31,7 @@ Para cada repositório ressuscitado, são gerados **dois snapshots** do código:
 - **Pós-revive:** 10º commit após a `data_ressurreicao`
 
 ## 2. Ferramentas de Análise
-A análise de qualidade é realizada utilizando o **SonarQube Cloud** e o `sonar-scanner-CLI`, que fornecem métricas detalhadas de qualidade, segurança e manutenibilidade do código.
+A análise de qualidade é realizada utilizando o **SonarQube Cloud** (https://sonarcloud.io/organizations/ti6/projects) e o `sonar-scanner-CLI`, que fornecem métricas detalhadas de qualidade, segurança e manutenibilidade do código.
 
 ## 3. Métricas Coletadas por Snapshot
 As principais métricas extraídas de cada snapshot são:
